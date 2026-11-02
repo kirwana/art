@@ -67,6 +67,17 @@ nav .out { color: var(--ink); }
 .intro h2 { font-size: 40px; }
 .intro p { margin: 0 0 16px; font-size: 17px; color: var(--soft); max-width: 62ch; }
 
+/* forest wall art: its own section, wider tiles for landscape prints */
+.walls { max-width: var(--max); margin: 0 auto; padding: 56px 24px 96px; border-top: 1px solid var(--line); scroll-margin-top: 72px; }
+.walls-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 64px; align-items: end; margin-bottom: 40px; }
+.walls-head h2 { font-size: clamp(40px, 5vw, 64px); }
+.walls-head p { margin: 0; color: var(--soft); font-size: 17px; max-width: 50ch; }
+.walls h3 { font-family: var(--text); font-weight: 500; font-size: 15px; margin: 8px 0 18px; }
+.walls h3 span { color: var(--soft); font-weight: 400; margin-left: 6px; }
+.walls .tiles { margin-bottom: 48px; }
+.walls .tiles.wide { grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+.walls .tiles.wide .tile .ph { aspect-ratio: 3 / 2; }
+
 /* design page */
 .design { max-width: var(--max); margin: 0 auto; padding: 28px 24px 96px; }
 .crumbs { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; color: var(--soft); margin: 0 0 28px; }
@@ -132,6 +143,9 @@ nav .out { color: var(--ink); }
   .bar { padding: 12px 16px; }
   .shop, .design, .intro, .hero-text, .cols, .fine { padding-left: 16px; padding-right: 16px; }
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 14px; }
+  .walls-head { grid-template-columns: minmax(0, 1fr); }
+  .walls .tiles.wide { grid-template-columns: minmax(0, 1fr); }
+  .walls { padding-left: 16px; padding-right: 16px; }
   .tn { font-size: 17px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }

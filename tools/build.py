@@ -49,8 +49,9 @@ PRICE = {"line": (3.49, "AUD", "Redbubble sticker"), "wall": (12.82, "AUD", "Red
 # and the title's "with Orange Ball" kind of ending is left out: that's the
 # colour accent, not the subject.
 RANGES = [
-    ("wall", "Forest wall art", "#c9d6c3", r"misty (oak|birch|forest)"),
-    ("more", "More line art", "#d9d4cb", r"guitar|music|dancing|robot"),     # before their accents' words
+    ("wall", "Graphic art", "#c9d6c3", r"misty (oak|birch|forest)"),
+    ("wall", "Graphic art", "#c9d6c3", r"robot"),                            # illustrations, not one line
+    ("more", "More line art", "#d9d4cb", r"guitar|music|dancing"),           # before their accents' words
     ("christmas", "Christmas", "#e59a8f", r"christmas|holly|stocking|reindeer|snowman|gingerbread|ornament|xmas"),
     ("coastal", "Coastal & ocean", "#a9cbe6", r"coastal|ocean|beach|whale|whale tail|dolphin|shark|turtle|sailboat|anchor|"
                                               r"crab|seahorse|starfish|shell|jellyfish|lighthouse|wave|sand dollar|fish"),
@@ -66,7 +67,7 @@ RANGES = [
     ("more", "More line art", "#d9d4cb", r""),
 ]
 RANGE = {k: (name, colour) for k, name, colour, _ in RANGES}
-ORDER = ["flowers", "celestial", "coastal", "animals", "fruit", "christmas", "wall", "more"]   # the shop's chips
+ORDER = ["flowers", "celestial", "coastal", "animals", "fruit", "christmas", "more"]   # the shop's chips
 
 PAPER = (245, 246, 241)      # the pictures' background: the page's own paper
 
@@ -136,8 +137,9 @@ def designs():
         d["title"] = (d.get("title") or os.path.basename(d["path"])).strip()
         d["description"] = (d.get("description") or "").strip().strip('"').strip()
         if d["folder"]:
-            base = os.path.basename(d["folder"])
-            d["id"] = slug(base)
+            # its folder's name, unique; a generic one ("drawing-3", "sketch") gives way to the title
+            base = slug(os.path.basename(d["folder"]))
+            d["id"] = slug(name_of(d)[0]) if re.fullmatch(r"(sketch|drawing|untitled)(-\d+)?", base) else base
             js = os.path.join(d["folder"], "design.json")
             try:
                 with open(js) as fh:
@@ -153,6 +155,12 @@ def designs():
         d["range"] = range_of(d)
         ds.append(d)
     ds.sort(key=lambda d: -d["created"])
+    taken = {}
+    for d in reversed(ds):          # oldest keeps the plain name: links already shared stay put
+        n = taken.get(d["id"], 0) + 1
+        taken[d["id"]] = n
+        if n > 1:
+            d["id"] = "%s-%d" % (d["id"], n)
     return ds
 
 
@@ -223,10 +231,10 @@ def pictures(d):
         make(d["id"] + ".jpg", wall)
         return out
     f = d["folder"]
-    base = os.path.basename(f)
-    art = os.path.join(f, "art.png")
+    # the clean, transparent artwork; a sketch's art.png is its scan, on white
+    art = os.path.join(f, "Files", os.path.basename(d["path"]).replace("_tee-black-line.png", "_art.png"))
     if not os.path.isfile(art):
-        art = os.path.join(f, "Files", base + "_art.png")
+        art = os.path.join(f, "art.png")
     d["art"] = art
     make(d["id"] + ".jpg", lambda: _flat(Image.open(art), 1400, .1))
     make(d["id"] + "-sticker.jpg", lambda: Image.open(os.path.join(f, "_preview_sticker.png")).convert("RGB"))
@@ -403,17 +411,21 @@ def design_page(d, related):
        "buys": "".join(buys), "zz": zz, "desc": html.escape(d["description"]), "rel": rel} + foot("../")
 
 
-def home_page(ds):
+def home_page(all_ds):
+    # the line art under "Drawn in one line", the graphic art (the forest
+    # prints) in its own section below: made, not drawn in one line
+    ds = [d for d in all_ds if d["range"] != "wall"]
+    walls = [d for d in all_ds if d["range"] == "wall"]
     present = [k for k in ORDER if any(d["range"] == k for d in ds)]
     chips = '<button type="button" data-r="all" class="on">All <span>%d</span></button>' % len(ds) + "".join(
         '<button type="button" data-r="%s" style="--blob:%s"><i></i>%s <span>%d</span></button>'
         % (k, RANGE[k][1], html.escape(RANGE[k][0]), sum(1 for d in ds if d["range"] == k)) for k in present)
     return head("Mirrors Studio · one-line art stickers, tees and wall art",
-                "One-line drawings and forest wall art by Mirrors Studio, on stickers, tees, mugs and prints from Redbubble and Zazzle.",
+                "One-line drawings and graphic wall art by Mirrors Studio, on stickers, tees, mugs and prints from Redbubble and Zazzle.",
                 "") + """
 <main>
   <section class="hero">
-    <img src="images/banner.jpg" alt="A row of one-line drawings, a flower, a moon, a shell, a cat and fruit, joined by one long line">
+    <img src="images/banner.jpg" alt="A row of one-line drawings: a snowdrop, a rainbow, a whale tail, a gecko, a coffee bean, a crab and a potted flower">
     <div class="hero-text">
       <h1>Drawn in one line.</h1>
       <p>Flowers, moons, shells and small animals, each drawn without lifting the pen, over a soft shape of colour. On stickers, tees, mugs and prints.</p>
@@ -424,11 +436,11 @@ def home_page(ds):
     <div class="chips" role="tablist" aria-label="Ranges">%s</div>
     <div class="tiles" id="tiles">%s</div>
   </section>
-
+%s
   <section class="intro" id="about">
     <h2>About Mirrors Studio</h2>
     <div>
-      <p>We are Carolina &amp; Alan, in Sydney. Mirrors Studio is where our drawings live: one-line flowers, celestial and coastal sets, little animals, and misty forest wall art.</p>
+      <p>We are Carolina &amp; Alan, in Sydney. Mirrors Studio is where our drawings live: one-line flowers, celestial and coastal sets, little animals, and our graphic art.</p>
       <p>We don't print or ship anything ourselves. Every design is sold through Redbubble and Zazzle, who print each order on demand and send it to you. Each design page links straight to it there.</p>
     </div>
   </section>
@@ -445,7 +457,41 @@ def home_page(ds):
   fromHash(); window.addEventListener('hashchange', fromHash);
 })();
 </script>
-""" % (chips, "".join(tile(d) for d in ds), json.dumps(present)) + foot("")
+""" % (chips, "".join(tile(d) for d in ds), walls_section(walls), json.dumps(present)) + foot("")
+
+
+def set_name(d):
+    """The set a graphic artwork belongs to: "Misty Oak", "Retro Robots"."""
+    t = d["title"]
+    if re.match(r"misty birch", t, re.I):
+        return "Misty Forest"
+    m = re.match(r"(misty \w+)", t, re.I)
+    if m:
+        return m.group(1).title()
+    return re.sub(r"\s+(minimalist|one[- ]line|line art).*", "", t.split(",")[0], flags=re.I).strip() + "s"
+
+
+def walls_section(walls):
+    if not walls:
+        return ""
+    groups = {}
+    for d in walls:
+        groups.setdefault(set_name(d), []).append(d)
+    sets = []
+    for name, group in groups.items():
+        wide = all(d["kind"] == "wall" for d in group)
+        sets.append('<h3>%s <span>%d %s</span></h3><div class="tiles%s">%s</div>'
+                    % (html.escape(name), len(group), "colourways" if wide else "designs",
+                       " wide" if wide else "", "".join(tile(d) for d in group)))
+    return """
+  <section class="walls" id="wall">
+    <div class="walls-head">
+      <h2>Graphic art</h2>
+      <p>Our digital artwork and illustrations, made rather than drawn in one line: misty forests of oak and birch in six colourways each, printed as posters, canvas and framed prints, and a crew of retro robots.</p>
+    </div>
+    %s
+  </section>
+""" % "".join(sets)
 
 
 def privacy_page():
