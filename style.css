@@ -49,9 +49,11 @@ nav .out { color: var(--ink); }
 
 .shop { max-width: var(--max); margin: 0 auto; padding: 0 24px 96px; scroll-margin-top: 72px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 22px 0 36px; border-top: 1px solid var(--line); }
-.chips button { font: 500 14px var(--text); color: var(--ink); background: transparent; border: 1px solid var(--line); padding: 8px 16px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
-.chips button i { width: 12px; height: 11px; background: var(--blob); border-radius: 60% 40% 55% 45% / 55% 60% 40% 45%; }
-.chips button span { color: var(--soft); }
+.chips button, .chips .jump { font: 500 14px var(--text); color: var(--ink); background: transparent; border: 1px solid var(--line); padding: 8px 16px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.chips .jump { text-decoration: none; border-style: dashed; }
+.chips .jump b { font-weight: 400; color: var(--soft); }
+.chips button i, .chips .jump i { width: 12px; height: 11px; background: var(--blob); border-radius: 60% 40% 55% 45% / 55% 60% 40% 45%; }
+.chips button span, .chips .jump span { color: var(--soft); }
 .chips button.on { background: var(--btn); color: var(--btn-ink); border-color: var(--btn); }
 .chips button.on span { color: inherit; opacity: .7; }
 

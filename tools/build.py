@@ -404,7 +404,7 @@ def design_page(d, related):
   if (thumbs.length < 2) document.querySelector('.strip').hidden = true;
 })();
 </script>
-""" % {"colour": colour, "r": d["range"], "rname": html.escape(rname), "rname_l": html.escape(rname.lower()),
+""" % {"colour": colour, "r": "graphic" if d["range"] == "wall" else d["range"], "rname": html.escape(rname), "rname_l": html.escape(rname.lower()),
        "name": html.escape(name), "rest": ('<p class="set">%s</p>' % html.escape(rest)) if rest else "",
        "wide": " wide" if d["kind"] == "wall" else "", "main": d["pics"][0], "thumbs": thumbs,
        "money": html.escape(money(d)), "cheapest": html.escape(cheapest.split(" ", 1)[1] + "s" if cheapest else ""),
@@ -420,6 +420,10 @@ def home_page(all_ds):
     chips = '<button type="button" data-r="all" class="on">All <span>%d</span></button>' % len(ds) + "".join(
         '<button type="button" data-r="%s" style="--blob:%s"><i></i>%s <span>%d</span></button>'
         % (k, RANGE[k][1], html.escape(RANGE[k][0]), sum(1 for d in ds if d["range"] == k)) for k in present)
+    if walls:
+        # not a filter: the graphic art has its own section further down
+        chips += ('<a class="jump" href="#graphic" style="--blob:%s"><i></i>%s <span>%d</span> <b aria-hidden="true">↓</b></a>'
+                  % (RANGE["wall"][1], html.escape(RANGE["wall"][0]), len(walls)))
     return head("Mirrors Studio · one-line art stickers, tees and wall art",
                 "One-line drawings and graphic wall art by Mirrors Studio, on stickers, tees, mugs and prints from Redbubble and Zazzle.",
                 "") + """
@@ -484,7 +488,7 @@ def walls_section(walls):
                     % (html.escape(name), len(group), "colourways" if wide else "designs",
                        " wide" if wide else "", "".join(tile(d) for d in group)))
     return """
-  <section class="walls" id="wall">
+  <section class="walls" id="graphic">
     <div class="walls-head">
       <h2>Graphic art</h2>
       <p>Our digital artwork and illustrations, made rather than drawn in one line: misty forests of oak and birch in six colourways each, printed as posters, canvas and framed prints, and a crew of retro robots.</p>
