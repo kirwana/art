@@ -521,7 +521,7 @@ def feed(ds, path):
             amt, cur, _ = price(d)
             w.writerow(["ms-" + d["id"], d["title"][:500], re.sub(r"\s+", " ", d["description"])[:9900],
                         "%s/d/%s.html" % (BASE, d["id"]), "%s/%s" % (BASE, d["pics"][0]),
-                        ",".join("%s/%s" % (BASE, p) for p in d["pics"][1:]),
+                        "",     # the artwork alone: no sticker or tee mockups for Pinterest to pick
                         "%.2f %s" % (amt, cur), "in stock", "new", "Mirrors Studio", RANGE[d["range"]][0]])
 
 
